@@ -1,0 +1,7 @@
+C:\Program Files\Microsoft Forefront Identity Manager\2010\Synchronization Service\Extensions\GenericRESTMA.dll
+C:\Program Files\Microsoft Forefront Identity Manager\2010\Synchronization Service\Extensions\GenericRESTMA.pdb
+C:\Users\Administrator\Documents\fim-mim\GenericRESTMA\obj\Debug\GenericRESTMA.dll
+C:\Users\Administrator\Documents\fim-mim\GenericRESTMA\obj\Debug\GenericRESTMA.pdb
+C:\dev\fim-mim\GenericRESTMA\obj\Debug\GenericRESTMA.csprojResolveAssemblyReference.cache
+C:\dev\fim-mim\GenericRESTMA\obj\Debug\GenericRESTMA.dll
+C:\dev\fim-mim\GenericRESTMA\obj\Debug\GenericRESTMA.pdb

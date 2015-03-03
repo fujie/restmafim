@@ -1,0 +1,14 @@
+C:\Users\Administrator\Documents\Visual Studio 2012\Projects\FIM_Plugins\Template\Template\obj\Debug\Template.csprojResolveAssemblyReference.cache
+C:\Users\Administrator\Documents\Visual Studio 2012\Projects\FIM_Plugins\Template\Template\bin\Debug\Template.dll
+C:\Users\Administrator\Documents\Visual Studio 2012\Projects\FIM_Plugins\Template\Template\bin\Debug\Template.pdb
+C:\Users\Administrator\Documents\Visual Studio 2012\Projects\FIM_Plugins\Template\Template\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Administrator\Documents\Visual Studio 2012\Projects\FIM_Plugins\Template\Template\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Administrator\Documents\Visual Studio 2012\Projects\FIM_Plugins\Template\Template\obj\Debug\Template.dll
+C:\Users\Administrator\Documents\Visual Studio 2012\Projects\FIM_Plugins\Template\Template\obj\Debug\Template.pdb
+C:\Users\Administrator\Documents\fim-mim\Template\Template\bin\Debug\Template.dll
+C:\Users\Administrator\Documents\fim-mim\Template\Template\bin\Debug\Template.pdb
+C:\Users\Administrator\Documents\fim-mim\Template\Template\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Administrator\Documents\fim-mim\Template\Template\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Administrator\Documents\fim-mim\Template\Template\obj\Debug\Template.csprojResolveAssemblyReference.cache
+C:\Users\Administrator\Documents\fim-mim\Template\Template\obj\Debug\Template.dll
+C:\Users\Administrator\Documents\fim-mim\Template\Template\obj\Debug\Template.pdb
