@@ -1,1 +1,4 @@
 Microsoft.MetadirectoryServicesEx.dll
+obj/
+packages/
+bin/
