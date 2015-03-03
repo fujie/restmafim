@@ -1,2 +1,0 @@
-C:\Program Files\Microsoft Forefront Identity Manager\2010\Synchronization Service\Extensions\GenericRESTMA.dll
-C:\Users\Administrator\Documents\fim-mim\GenericRESTMA\obj\Release\GenericRESTMA.dll
