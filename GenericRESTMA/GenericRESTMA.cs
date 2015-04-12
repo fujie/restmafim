@@ -208,7 +208,7 @@ namespace FimSync_Ezma
                             break;
                         default:
                             // 'AttributeType.Undefined' is not defined in ECMA2.0(ex.Microsoft.MetadirectoryServicesEx.dll ver. 4.1.3419.0)
-                            // You must use ECMA 2.2 or later, or delete this line.
+                            // You must use ECMA 2.3 or later, or delete this line.
                             _attributeType = AttributeType.Undefined;
                             break;
                     }
@@ -765,6 +765,11 @@ namespace FimSync_Ezma
 #endif
                     foreach (KeyValuePair<string, KeyedCollection<string, SchemaAttribute>> _objectTypeInfo in _fimSchemas)
                     {
+                        // check objectType
+                        if (_objectTypeInfo.Key != _csentryChange.ObjectType)
+                        {
+                            continue;
+                        }
                         // get endpoint for each object types
                         string _endPoint = pluginInstance.GetEndPoints(_objectTypeInfo.Key);
                         // build json to POST
