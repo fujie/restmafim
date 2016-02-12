@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -65,6 +66,98 @@ namespace Plugin
             }
             return _getAnchor;
         }
+
+        // build JSON Object
+        private string getJSONObject2(PropertyInfo[] propertyInfoArray, Dictionary<string, string> attributes)
+        {
+            string _getJSONObject = null;
+            var _obj = new Dictionary<string, object>();
+
+            foreach (var _propertyInfo in propertyInfoArray)
+            {
+                foreach (KeyValuePair<string, string> _kvp in attributes)
+                {
+                    if (_propertyInfo.Name == _kvp.Key)
+                    {
+                        // check attribute is multi-valued or not
+                        ArrayList _arr = null;
+                        Boolean _isMulti = false;
+                        var attribute = _propertyInfo.GetCustomAttribute(typeof(MultiValueAttribute));
+                        if (attribute != null)
+                        {
+                            if (((MultiValueAttribute)attribute).isMultiValue == true)
+                            {
+                                // multi-value attribute
+                                _arr = new ArrayList();
+                                _isMulti = true;
+                            }
+                        }
+
+
+
+                        if (_kvp.Key.Contains("__"))
+                        {
+                            // nested attribute
+                            var _parentAttributeName = _kvp.Key.Substring(0, _kvp.Key.IndexOf("__"));
+                            var _childAttributeName = _kvp.Key.Substring(_kvp.Key.IndexOf("__") + 2);
+                            if (_obj.ContainsKey(_parentAttributeName))
+                            {
+                                // if multi-valued attribute, put _child object to array
+                                if (_isMulti)
+                                {
+                                    // already have parent attribute as key -> replace value
+                                    var _a = (ArrayList)_obj[_parentAttributeName];
+                                    var _child = new Dictionary<string, object>();
+                                    _child.Add(_childAttributeName, _kvp.Value);
+                                    _a.Add(_child);
+                                    _obj[_parentAttributeName] = _a;
+                                }
+                                else
+                                {
+                                    // already have parent attribute as key -> replace value
+                                    var _child = (Dictionary<string, object>)_obj[_parentAttributeName];
+                                    _child.Add(_childAttributeName, _kvp.Value);
+                                    _obj[_parentAttributeName] = _child;
+                                }
+
+                            }
+                            else
+                            {
+                                // if multi-valued attribute, put _child object to array
+                                if (_isMulti)
+                                {
+                                    var _child = new Dictionary<string, object>();
+                                    _child.Add(_childAttributeName, _kvp.Value);
+                                    ArrayList _a = new ArrayList();
+                                    _a.Add(_child);
+                                    _obj.Add(_parentAttributeName, _a);
+                                }
+                                else
+                                {
+                                    var _child = new Dictionary<string, object>();
+                                    _child.Add(_childAttributeName, _kvp.Value);
+                                    _obj.Add(_parentAttributeName, _child);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // build jsonObject from string
+                            // do not have parent
+                            _obj.Add(_kvp.Key, _kvp.Value);
+                        }
+                        break;
+                    }
+                }
+            }
+            _getJSONObject = JsonConvert.SerializeObject(_obj);
+
+            return _getJSONObject;
+        }
+
+
+
+
         // build JSON Object
         private string getJSONObject(PropertyInfo[] propertyInfoArray, Dictionary<string, string> attributes)
         {
@@ -132,7 +225,8 @@ namespace Plugin
             }
             if (_propertyInfoArray != null)
             {
-                _jsonString = getJSONObject(_propertyInfoArray, attributes);
+                _jsonString = getJSONObject2(_propertyInfoArray, attributes);
+                //_jsonString = getJSONObject(_propertyInfoArray, attributes);
             }
             return _jsonString;
         }
@@ -269,6 +363,29 @@ namespace Plugin
             }
 
             return _getSchema;
+        }
+
+        // Parse Response JSON
+        // return values
+        // 
+        public Dictionary<string,string> ParseResponse(string responseJSON)
+        {
+            var _ret = new Dictionary<string, string>();
+
+            var _errorResultJson = JToken.Parse(responseJSON);
+            if (_errorResultJson["error"] == null)
+            {
+                // no error
+                _ret.Add("RESULT", "SUCCESS");
+            }
+            else
+            {
+                // error
+                _ret.Add("RESULT", "ERROR");
+                _ret.Add("REASON", JToken.Parse(responseJSON)["error"]["errors"][0]["reason"].ToString().ToUpper());
+            }
+
+            return _ret;
         }
     }
 }

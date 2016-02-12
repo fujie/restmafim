@@ -726,20 +726,53 @@ namespace FimSync_Ezma
                 if (pluginInstance == null)
                 {
                     pluginInstance = utils.GetPluginLibraryInstance(_configParameters);
-                    utils.Logger(TraceEventType.Verbose,
-                                 ConstDefinition.ID0750_VERBOSE_OPENEXPORTCONNECTION,
-                                 ConstDefinition.MSG0750_VERBOSE_OPENEXPORTCONNECTION + "Getting plugin library instance");
+                    if (pluginInstance != null)
+                    {
+                        utils.Logger(TraceEventType.Verbose,
+                                     ConstDefinition.ID0750_VERBOSE_OPENEXPORTCONNECTION,
+                                     ConstDefinition.MSG0750_VERBOSE_OPENEXPORTCONNECTION + "Getting plugin library instance");
+                    }
+                    else
+                    {
+                        utils.Logger(TraceEventType.Error,
+                                     ConstDefinition.ID0799_ERROR_OPENEXPORTCONNECTION,
+                                     ConstDefinition.MSG0799_ERROR_OPENEXPORTCONNECTION + "Could not get plugin library instance");
+                        throw new ExtensibleExtensionException(ConstDefinition.MSG0799_ERROR_OPENEXPORTCONNECTION + "Could not get plugin library instance");
+                    }
                 }
                 // Get Token End Point
                 string _tokenEndPoint = pluginInstance.GetEndPoints(pluginInstance.ENDPOINTTYPE_TOKEN);
+                if (_tokenEndPoint != null)
+                {
+                    utils.Logger(TraceEventType.Verbose,
+                                 ConstDefinition.ID0750_VERBOSE_OPENEXPORTCONNECTION,
+                                 ConstDefinition.MSG0750_VERBOSE_OPENEXPORTCONNECTION + "Get Token Endpoint : " + _tokenEndPoint);
+                }
+                else
+                {
+                    utils.Logger(TraceEventType.Error,
+                                 ConstDefinition.ID0799_ERROR_OPENEXPORTCONNECTION,
+                                 ConstDefinition.MSG0799_ERROR_OPENEXPORTCONNECTION + "Could not get Token Endpoint");
+                    throw new ExtensibleExtensionException(ConstDefinition.MSG0799_ERROR_OPENEXPORTCONNECTION + "Could not get Token Endpoint");
+                }
 
                 // Obtain Access Token
                 proxyServerType = utils.GetProxyUsageType(_configParameters);
                 webProxy = utils.GetProxy(_configParameters);
                 accessToken = utils.GetAccessToken(pluginInstance, _configParameters, webProxy);
-                utils.Logger(TraceEventType.Verbose,
-                             ConstDefinition.ID0750_VERBOSE_OPENEXPORTCONNECTION,
-                             ConstDefinition.MSG0750_VERBOSE_OPENEXPORTCONNECTION + "obtain access token : " + accessToken);
+                if (accessToken != null)
+                {
+                    utils.Logger(TraceEventType.Verbose,
+                                 ConstDefinition.ID0750_VERBOSE_OPENEXPORTCONNECTION,
+                                 ConstDefinition.MSG0750_VERBOSE_OPENEXPORTCONNECTION + "obtain access token : " + accessToken);
+                }
+                else
+                {
+                    utils.Logger(TraceEventType.Error,
+                                 ConstDefinition.ID0799_ERROR_OPENEXPORTCONNECTION,
+                                 ConstDefinition.MSG0799_ERROR_OPENEXPORTCONNECTION + "Could not obtain access token");
+                    throw new ExtensibleExtensionException(ConstDefinition.MSG0799_ERROR_OPENEXPORTCONNECTION + "Could not obtain access token");
+                }
             }
             catch (Exception ex)
             {
@@ -817,14 +850,62 @@ namespace FimSync_Ezma
                                         try
                                         {
                                             _exportResult = utils.PostContentsWithAccessToken(_endPoint, accessToken, _exportDataJSON, webProxy);
-#if DEBUG
-                                            utils.Logger(TraceEventType.Verbose, ConstDefinition.ID0850_VERBOSE_PUTEXPORTENTRIES, _exportResult);
-#endif
-                                            // success
-                                            _exportEntriesResults.CSEntryChangeResults.Add(
-                                                CSEntryChangeResult.Create(_csentryChange.Identifier,
-                                                                           _csentryChange.AttributeChanges,
-                                                                           MAExportError.Success));
+                                            var _result = pluginInstance.ParseResponse(_exportResult);
+                                            if (_result["RESULT"] == "SUCCESS")
+                                            {
+                                                // success
+                                                _exportEntriesResults.CSEntryChangeResults.Add(
+                                                    CSEntryChangeResult.Create(_csentryChange.Identifier,
+                                                                               _csentryChange.AttributeChanges,
+                                                                               MAExportError.Success));
+                                            }
+                                            else
+                                            {
+                                                // error
+                                                if(_result["REASON"] == "DUPLICATE"){
+                                                    // create -> update
+                                                    _exportResult = utils.PutContentsWithAccessToken(_endPoint + "/" + _csentryChange.DN.ToString(), accessToken, _exportDataJSON, webProxy);
+                                                    _result = pluginInstance.ParseResponse(_exportResult);
+                                                    if (_result["RESULT"] == "SUCCESS")
+                                                    {
+                                                        // success
+                                                        _exportEntriesResults.CSEntryChangeResults.Add(
+                                                            CSEntryChangeResult.Create(_csentryChange.Identifier,
+                                                                                       _csentryChange.AttributeChanges,
+                                                                                       MAExportError.Success));
+                                                    }
+                                                    else
+                                                    {
+                                                        // error
+                                                        utils.Logger(TraceEventType.Error,
+                                                                     ConstDefinition.ID0899_ERROR_PUTEXPORTENTRIES,
+                                                                     ConstDefinition.MSG0899_ERROR_PUTEXPORTENTRIES + "Export Error : " + _exportResult);
+                                                        // To do : change MAExportError value per ex.HResult
+                                                        _exportEntriesResults.CSEntryChangeResults.Add(
+                                                            CSEntryChangeResult.Create(_csentryChange.Identifier,
+                                                                                       _csentryChange.AttributeChanges,
+                                                                                       MAExportError.ExportErrorConnectedDirectoryError,
+                                                                                       "Export Error : " + _exportResult,
+                                                                                       _exportResult
+                                                                                       ));
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    // error
+                                                    utils.Logger(TraceEventType.Error,
+                                                                 ConstDefinition.ID0899_ERROR_PUTEXPORTENTRIES,
+                                                                 ConstDefinition.MSG0899_ERROR_PUTEXPORTENTRIES + "Export Error : " + _exportResult);
+                                                    // To do : change MAExportError value per ex.HResult
+                                                    _exportEntriesResults.CSEntryChangeResults.Add(
+                                                        CSEntryChangeResult.Create(_csentryChange.Identifier,
+                                                                                   _csentryChange.AttributeChanges,
+                                                                                   MAExportError.ExportErrorConnectedDirectoryError,
+                                                                                   "Export Error : " + _exportResult,
+                                                                                   _exportResult
+                                                                                   ));
+                                                }
+                                            }
                                         }
                                         catch (Exception ex)
                                         {
@@ -882,7 +963,7 @@ namespace FimSync_Ezma
                                 {
                                     _exportResult = utils.DeleteContentsWithAccessToken(_endPoint + "/" + _csentryChange.DN.ToString(), accessToken, webProxy);
 #if DEBUG
-                                            utils.Logger(TraceEventType.Verbose, ConstDefinition.ID0850_VERBOSE_PUTEXPORTENTRIES, _res);
+                                    utils.Logger(TraceEventType.Verbose, ConstDefinition.ID0850_VERBOSE_PUTEXPORTENTRIES, _exportResult);
 #endif
                                     // success
                                     _exportEntriesResults.CSEntryChangeResults.Add(
